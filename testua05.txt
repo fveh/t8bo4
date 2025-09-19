@@ -1,0 +1,9 @@
+// Hook an record_global_mp_stats_for_player_at_match_end
+function my_custom_stats_hook()
+{
+    self.pers[#rank] = 55;     // Max Rank
+    self.pers[#plevel] = 10;   // Prestige 10
+    self.pers[#rankxp] = 999999; // Viel XP
+    // dann Original-Funktion aufrufen, damit's sauber gespeichert wird
+    original_record_global_mp_stats_for_player_at_match_end();
+}
