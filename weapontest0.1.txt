@@ -1,0 +1,160 @@
+// SetClass: setzt eine Custom-Klasse (pregame / lobby). Nutze Debug_PrintWeaponLists um Namen zu finden.
+// Example usage: SetClassSlot(self, 1, #"m4", #"m1911", #"claymore", Array(#"reflex", #"holo"));
+
+function SetClassSlot(player, slotIndex, primaryName, secondaryName, equipmentName, attachmentsArray)
+{
+    if(!isdefined(player))
+        return;
+
+    player iPrintLnBold("^2[SetClass] Versuch Klasse " + slotIndex + " zu setzen...");
+
+    // Helper: resolve itemDef via common lookup helper (falls vorhanden)
+    function ResolveItemDefByName(name)
+    {
+        if(!isdefined(name) || name == #"")
+            return undefined;
+
+        // versuche: interne Lookup-Funktion (aus item_inventory.gsc)
+        if(isdefined(function_4ba8fde))
+        {
+            def = function_4ba8fde(name);
+            if(isdefined(def))
+                return def;
+        }
+
+        // fallback: durchsuchen level.weaponlist / zombie_weapons
+        if(isdefined(level.weaponlist))
+        {
+            foreach(w in level.weaponlist)
+            {
+                if(isdefined(w.name) && w.name == name)
+                    return w;
+            }
+        }
+        if(isdefined(level.zombie_weapons))
+        {
+            foreach(g in level.zombie_weapons)
+            {
+                if(isdefined(g.weapon) && g.weapon.name == name)
+                    return g.weapon;
+            }
+        }
+
+        return undefined;
+    }
+
+    // Helper: spawn + give inventory (returns engine inventory object or undefined)
+    function GiveAndGetInventory(itemDef)
+    {
+        if(!isdefined(itemDef))
+            return undefined;
+
+        // build a minimal item struct consistent with engine expectations
+        localItem = spawnstruct();
+        // verschiedene Engines haben unterschiedliche Felder; setze id/name falls vorhanden
+        if(isdefined(itemDef.id))
+            localItem.id = itemDef.id;
+        if(isdefined(itemDef.name))
+            localItem.name = itemDef.name;
+        localItem.count = 1;
+
+        // give inventory (engine function expected)
+        if(isdefined(give_inventory_item))
+            give_inventory_item(localItem, 1);
+
+        // try to get the actual inventory object (engine wrapper)
+        if(isdefined(get_inventory_item) && isdefined(localItem.id))
+            return get_inventory_item(localItem.id);
+
+        // fallback: return the def as "best-effort" object
+        return itemDef;
+    }
+
+    // equip helper for weapon
+    function TryEquipWeapon(invItem, switchWeapon)
+    {
+        if(!isdefined(invItem))
+            return 0;
+        if(isdefined(player equip_weapon))
+        {
+            // most engines: equip_weapon(item, switchWeapon, ???)
+            player equip_weapon(invItem, (isdefined(switchWeapon) ? switchWeapon : 1), 0, 0, 1);
+            return 1;
+        }
+        return 0;
+    }
+
+    // --- Primary
+    if(isdefined(primaryName))
+    {
+        def = ResolveItemDefByName(primaryName);
+        if(!isdefined(def))
+        {
+            player iPrintLn("^1[SetClass] Primary not found: " + primaryName);
+        }
+        else
+        {
+            inv = GiveAndGetInventory(def);
+            if(TryEquipWeapon(inv, 1))
+                player iPrintLn("^2[SetClass] Primary " + primaryName + " gesetzt.");
+        }
+    }
+
+    // --- Secondary
+    if(isdefined(secondaryName))
+    {
+        def = ResolveItemDefByName(secondaryName);
+        if(isdefined(def))
+        {
+            inv = GiveAndGetInventory(def);
+            TryEquipWeapon(inv, 0);
+            player iPrintLn("^2[SetClass] Secondary " + secondaryName + " gesetzt.");
+        }
+    }
+
+    // --- Equipment
+    if(isdefined(equipmentName))
+    {
+        def = ResolveItemDefByName(equipmentName);
+        if(isdefined(def))
+        {
+            inv = GiveAndGetInventory(def);
+            if(isdefined(player equip_equipment))
+            {
+                player equip_equipment(inv);
+                player iPrintLn("^2[SetClass] Equipment " + equipmentName + " gesetzt.");
+            }
+        }
+    }
+
+    // --- Attachments (best-effort)
+    if(isdefined(attachmentsArray) && attachmentsArray.size > 0)
+    {
+        foreach(att in attachmentsArray)
+        {
+            attDef = ResolveItemDefByName(att);
+            if(isdefined(attDef))
+            {
+                attInv = GiveAndGetInventory(attDef);
+                // try engine attachment call if available
+                if(isdefined(player equip_attachment))
+                {
+                    // equip_attachment(sig depends) : try several param patterns
+                    player equip_attachment(attInv, undefined, undefined, 0, 1);
+                }
+                wait 0.02;
+            }
+        }
+        player iPrintLn("^2[SetClass] Attachments versucht.");
+    }
+
+    // Optional: persistenz / Upload attempt
+    wait 0.1;
+    if(isdefined(UploadStats))
+    {
+        UploadStats(player);
+        player iPrintLn("^2[SetClass] UploadStats aufgerufen (persist attempt).");
+    }
+
+    player iPrintLnBold("^2[SetClass] Done.");
+}
