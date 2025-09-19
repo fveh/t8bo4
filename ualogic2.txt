@@ -1,0 +1,6 @@
+self stats::set_stat_global(#"rankxp", newxp, 1);
+self stats::set_stat_global(#"rank", newrank, 1);
+self stats::set_stat_global(#"plevel", prestige, 1);
+self setrank(newrank, prestige);
+self.pers[#"rank"] = newrank;
+self.pers[#"plevel"] = prestige;
