@@ -1,0 +1,23 @@
+bo4_SetMaxStats(player)
+{
+    player endon("disconnect");
+    player iPrintLnBold("^2Applying Max Stats...");
+
+    // Max Rank
+    player stats::set_stat(#"PlayerStatsList", #"rank", #"StatValue", 55);  
+    player stats::set_stat(#"PlayerStatsList", #"rank", #"ChallengeValue", 55);
+
+    // Prestige
+    player stats::set_stat(#"PlayerStatsList", #"plevel", #"StatValue", 10);
+    player stats::set_stat(#"PlayerStatsList", #"plevel", #"ChallengeValue", 10);
+
+    // XP
+    player stats::set_stat(#"PlayerStatsList", #"rankxp", #"StatValue", 999999);
+    player stats::set_stat(#"PlayerStatsList", #"rankxp", #"ChallengeValue", 999999);
+
+    // Zum Schluss abspeichern
+    wait 0.1;
+    UploadStats(player);
+
+    player iPrintLnBold("^2Max Stats Set & Saved!");
+}
