@@ -1,0 +1,33 @@
+// Debug: alle verfügbaren Waffen / zombieweapons drucken
+function Debug_PrintWeaponLists(player)
+{
+    player iPrintLnBold("^2--- Weapon lists (weaponlist / zombie_weapons) ---");
+
+    // Falls level.weaponlist vorhanden ist
+    if(isdefined(level.weaponlist))
+    {
+        foreach(w in level.weaponlist)
+        {
+            if(isdefined(w) && isdefined(w.name))
+                player iPrintLn("^7weaponlist: " + w.name);
+        }
+    }
+
+    // Zombie weapons (falls vorhanden)
+    if(isdefined(level.zombie_weapons))
+    {
+        foreach(g in level.zombie_weapons)
+        {
+            if(isdefined(g.weapon) && isdefined(g.weapon.name))
+                player iPrintLn("^7zombie_weapons: " + g.weapon.name);
+        }
+    }
+
+    // eventuell auch weapon registry via a lookup helper (wenn vorhanden)
+    if(isdefined(function_4ba8fde))
+    {
+        player iPrintLn("^2Tip: benutze function_4ba8fde(name) um ein ItemDef zu finden.");
+    }
+
+    player iPrintLnBold("^2--- Ende ---");
+}
