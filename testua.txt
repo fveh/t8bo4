@@ -1,0 +1,36 @@
+#using scripts\core_common\callbacks_shared.gsc;
+#using scripts\core_common\util_shared.gsc;
+#using scripts\core_common\player\player_stats.gsc;
+
+#namespace custom_prestige;
+
+/*
+    AutoExec: Hook in on_player_spawned
+*/
+function autoexec __init__()
+{
+    callback::on_spawned(&on_player_spawned_custom);
+}
+
+/*
+    Wird jedes Mal ausgeführt, wenn ein Spieler spawnt
+*/
+function on_player_spawned_custom()
+{
+    self thread set_max_rank();
+}
+
+/*
+    Setzt Prestige, Level und XP
+*/
+function set_max_rank()
+{
+    wait 1; // kleines Delay, damit Player-Objekt sauber geladen ist
+
+    self stats::set_stat_global(#"plevel", 10);       // Prestige 10
+    self stats::set_stat_global(#"rank", 55);         // Max Level 55
+    self stats::set_stat_global(#"rankxp", 999999);   // Viel XP
+
+    UploadStats(self); // sehr wichtig: Werte hochladen / speichern
+    self iPrintLnBold("^2Prestige 10 / Level 55 / Max XP aktiviert!");
+}
