@@ -1,0 +1,21 @@
+function bo4_SetMaxPrestigeOnly()
+{
+    // Max XP und Rank setzen
+    self stats::set_stat_global(#"rankxp", level.rankxpcap, 1);
+    self stats::set_stat_global(#"rank", level.maxrank, 1);
+
+    // Prestige 10 (max)
+    self stats::set_stat_global(#"plevel", level.maxprestige, 1);
+
+    // Paragon: Nur Start-Level (56), Spieler kann danach selbst weiterleveln bis 1000
+    self stats::set_stat_global(#"paragon_rank", 56, 1);
+    self stats::set_stat_global(#"paragon_icon_id", 1, 1);
+
+    // Sofort ins Spiel übernehmen
+    self.pers[#"rankxp"] = level.rankxpcap;
+    self.pers[#"rank"]   = level.maxrank;
+    self.pers[#"plevel"] = level.maxprestige;
+    self setrank(level.maxrank, level.maxprestige);
+
+    self iprintln("🏆 Max Prestige gesetzt! Du startest Paragon bei Level 56.");
+}
