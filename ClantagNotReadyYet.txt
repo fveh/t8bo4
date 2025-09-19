@@ -1,0 +1,39 @@
+// Simple clan tag setter + small in-game command
+// Usage in dev chat: /setclan ABCD   (max 4 chars)
+// Works offline for local display; persistence attempted if UploadStats exists.
+
+function cmd_setclan(player, tag)
+{
+    // sanitize tag: max 4 chars, no special newlines
+    if(!isdefined(tag) || tag == #"")
+    {
+        player iPrintLnBold("^1Usage: /setclan TAG");
+        return;
+    }
+    // trim + uppercase + limit to 4 ch
+    newtag = toUpperString(strsub(tag, 0, 4));
+
+    // Set a local display var so we can restore original later
+    player.var_clantag_original_name = player.name;
+
+    // Compose new display name (CT in brackets)
+    display = "[" + newtag + "] " + player.var_clantag_original_name;
+
+    // Try: assign to player.name (may or may not be persisted depending on engine)
+    // If it's readonly, you instead must hook HUD draw to show 'display' instead of player.name
+    player.name = display;
+
+    // Inform player
+    player iPrintLnBold("^2Clan tag set to: ^7" + newtag);
+
+    // Optional: try persistence (only if engine exposes UploadStats/persistence API)
+    if(isDefined(UploadStats))
+    {
+        // if UploadStats expects player-pers values, ensure what key stores name
+        // Often name is stored elsewhere — test if writing player.name + UploadStats persists.
+        UploadStats(player); // harmless to call, but test
+        player iPrintLnBold("^2Attempted to UploadStats for persistence.");
+    }
+}
+
+// Example hook: hook chat or console command parser to call cmd_setclan(player, arg)
